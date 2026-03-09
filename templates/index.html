@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Genuine Alpha Screener</title>
-    <!-- Use Google Fonts -->
+    <meta name="description" content="Algorithmic crypto screener with Wyckoff Phase Analysis">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <!-- Background Decorators -->
     <div class="bg-orb orb-1"></div>
@@ -20,9 +22,29 @@
                 <span class="icon">⚡</span>
                 <h1>Genuine Alpha Screener</h1>
             </div>
-            <p class="subtitle">Discover altcoins outperforming Bitcoin with Relative Strength analysis.</p>
+            <p class="subtitle">Algorithmic trading pipeline: Screener → Wyckoff Structure Analysis.</p>
         </header>
 
+        <!-- Pipeline Steps Indicator -->
+        <div class="pipeline-steps">
+            <div class="step active" id="step-1-indicator">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                    <span class="step-title">Market Screener</span>
+                    <span class="step-desc">Relative Strength R &lt; 2.0</span>
+                </div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-2-indicator">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                    <span class="step-title">Node 1: Wyckoff</span>
+                    <span class="step-desc">Volume & ATR Compression</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Screener -->
         <section class="controls">
             <button id="scan-btn" class="glow-on-hover">
                 <span class="btn-text">Start Market Scan</span>
@@ -30,19 +52,19 @@
             </button>
         </section>
 
-        <!-- Loading Skeleton (Hidden by default) -->
+        <!-- Step 1 Loader -->
         <div id="loader" class="loader-container hidden">
             <div class="spinner"></div>
             <p>Scanning Top 100 Coins & Calculating Relative Strength...</p>
             <p class="small-text">This usually takes around 10-15 seconds.</p>
         </div>
 
-        <!-- Error Message Container (Hidden by default) -->
+        <!-- Error Message Container -->
         <div id="error-msg" class="error-container hidden">
             <p id="error-text">An error occurred while fetching data.</p>
         </div>
 
-        <!-- Results Table (Hidden by default) -->
+        <!-- Step 1 Results Table -->
         <div id="results-container" class="results-container hidden">
             <div class="table-header">
                 <h2>Active Watchlist <span class="badge">R &lt; 2.0</span></h2>
@@ -61,7 +83,50 @@
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Step 2: Wyckoff Analysis Button (appears after Screener) -->
+            <section class="controls wyckoff-controls">
+                <button id="wyckoff-btn" class="glow-on-hover wyckoff-btn">
+                    <span class="btn-text">Run Wyckoff Analysis</span>
+                    <span class="btn-icon">⚡</span>
+                </button>
+            </section>
+        </div>
+
+        <!-- Step 2 Loader -->
+        <div id="wyckoff-loader" class="loader-container hidden">
+            <div class="spinner spinner-green"></div>
+            <p>Analyzing Wyckoff Phase A Structure...</p>
+            <p class="small-text">Fetching 180-day data & computing Volume/ATR compression for each coin.</p>
+        </div>
+
+        <!-- Step 2 Error -->
+        <div id="wyckoff-error" class="error-container hidden">
+            <p id="wyckoff-error-text">An error occurred during Wyckoff analysis.</p>
+        </div>
+
+        <!-- Step 2 Results Table -->
+        <div id="wyckoff-results" class="results-container hidden">
+            <div class="table-header">
+                <h2>Node 1: Wyckoff Validated <span class="badge badge-green">Passed</span></h2>
+                <div class="stats" id="wyckoff-stats">Found 0 coins</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="wyckoff-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>SC Date</th>
+                            <th>SC Close</th>
+                            <th>Volume Drop (%)</th>
+                            <th>ATR Drop (%)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wyckoff-table-body">
                     </tbody>
                 </table>
             </div>
@@ -70,4 +135,5 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>

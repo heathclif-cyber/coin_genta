@@ -9,6 +9,10 @@
     --accent-solid: #6366f1;
     --accent-hover: #818cf8;
 
+    --green-solid: #10b981;
+    --green-glow: rgba(16, 185, 129, 0.5);
+    --green-hover: #34d399;
+
     --glass-bg: rgba(20, 20, 30, 0.4);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -32,7 +36,7 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     overflow-x: hidden;
     position: relative;
     padding: 2rem;
@@ -53,7 +57,6 @@ body {
     width: 500px;
     height: 500px;
     background: rgba(99, 102, 241, 0.15);
-    /* Indigo */
     top: -10%;
     left: -10%;
 }
@@ -62,7 +65,6 @@ body {
     width: 400px;
     height: 400px;
     background: rgba(139, 92, 246, 0.15);
-    /* Purple */
     bottom: -10%;
     right: -5%;
     animation-delay: -5s;
@@ -72,7 +74,6 @@ body {
     width: 300px;
     height: 300px;
     background: rgba(16, 185, 129, 0.1);
-    /* Emerald */
     top: 40%;
     left: 40%;
     animation-delay: -10s;
@@ -113,7 +114,7 @@ body {
 ================================== */
 header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .logo {
@@ -157,12 +158,97 @@ h1 {
 }
 
 /* ==================================
+   Pipeline Steps Indicator
+================================== */
+.pipeline-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 2.5rem;
+    padding: 1.25rem 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    transition: all 0.4s ease;
+    opacity: 0.4;
+}
+
+.step.active {
+    opacity: 1;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.step.completed {
+    opacity: 1;
+}
+
+.step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+}
+
+.step.active .step-number {
+    background: var(--accent-solid);
+    border-color: var(--accent-solid);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.step.completed .step-number {
+    background: var(--green-solid);
+    border-color: var(--green-solid);
+    box-shadow: 0 0 15px var(--green-glow);
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.step-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.step-connector {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(to right, rgba(99, 102, 241, 0.3), rgba(16, 185, 129, 0.3));
+    margin: 0 0.5rem;
+    flex-shrink: 0;
+}
+
+/* ==================================
    Controls (Button)
 ================================== */
 .controls {
     display: flex;
     justify-content: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .glow-on-hover {
@@ -197,6 +283,12 @@ h1 {
     transform: translateY(1px);
 }
 
+.glow-on-hover:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-icon {
     transition: transform 0.3s ease;
 }
@@ -205,8 +297,24 @@ h1 {
     transform: translateX(5px);
 }
 
+/* Wyckoff Button (Green variant) */
+.wyckoff-btn {
+    background: var(--green-solid);
+    box-shadow: 0 4px 15px var(--green-glow);
+}
+
+.wyckoff-btn:hover {
+    background: var(--green-hover);
+    box-shadow: 0 8px 25px var(--green-glow);
+}
+
+.wyckoff-controls {
+    margin-top: 2rem;
+    margin-bottom: 0;
+}
+
 /* ==================================
-   Loader / Error Modals
+   Loader / Error
 ================================== */
 .hidden {
     display: none !important;
@@ -227,6 +335,10 @@ h1 {
     border-top-color: var(--accent-solid);
     margin: 0 auto 1.5rem auto;
     animation: spin 1s ease-in-out infinite;
+}
+
+.spinner-green {
+    border-top-color: var(--green-solid);
 }
 
 @keyframes spin {
@@ -259,6 +371,7 @@ h1 {
 ================================== */
 .results-container {
     animation: slideUp 0.6s ease forwards;
+    margin-bottom: 1.5rem;
 }
 
 @keyframes slideUp {
@@ -300,11 +413,17 @@ h1 {
 }
 
 .badge {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--accent-solid);
     font-size: 0.8rem;
     padding: 4px 10px;
     border-radius: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.badge-green {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--green-solid);
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
@@ -363,13 +482,12 @@ tbody tr:hover {
 }
 
 .r-value {
-    color: #10b981;
+    color: var(--green-solid);
     font-weight: 700;
 }
 
-/* Value formatting colors */
 .value-good {
-    color: #10b981;
+    color: var(--green-solid);
 }
 
 .value-neutral {
@@ -378,6 +496,28 @@ tbody tr:hover {
 
 .value-bad {
     color: #ef4444;
+}
+
+.value-compression {
+    color: var(--green-solid);
+    font-weight: 600;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-passed {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--green-solid);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 /* Responsive */
@@ -389,5 +529,20 @@ tbody tr:hover {
     th,
     td {
         padding: 0.8rem 1rem;
+    }
+
+    .pipeline-steps {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .step-connector {
+        width: 2px;
+        height: 30px;
+        margin: 0;
+    }
+
+    h1 {
+        font-size: 1.8rem;
     }
 }
