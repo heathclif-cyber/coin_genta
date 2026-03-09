@@ -1,22 +1,17 @@
 import pandas as pd
-import ccxt
 import requests
 import time
+from binance_client import get_exchange
 
-# Menginisialisasi koneksi ke bursa Binance secara khusus untuk pasar Spot
-exchange = ccxt.binance({
-    # Sangat penting untuk menghindari blokir IP: mengaktifkan rate limiter bawaan CCXT
-    'enableRateLimit': True, 
-    
-    # Memaksa CCXT untuk menggunakan API endpoint untuk pasar Spot (bukan Futures/Margin)
-    'options': {
-        'defaultType': 'spot',
-    }
-})
+# Initialize exchange via shared client (with proxy + fallback URL support)
+exchange = None
 
-# Suppress initial print statements to keep API responses clean
-# print("Pustaka berhasil diimpor.")
-# print(f"Bursa yang diinisialisasi: {exchange.name} ({exchange.options['defaultType']})")
+def _get_exchange():
+    """Lazy init: get the shared Binance exchange instance."""
+    global exchange
+    if exchange is None:
+        exchange = get_exchange()
+    return exchange
 
 def get_top_100_coins():
     """
@@ -71,9 +66,13 @@ def get_price_data(symbols):
         ticker = f"{symbol}/USDT"
         
         try:
+            ex = _get_exchange()
+            if ex is None:
+                print("Exchange not available. Aborting.")
+                break
             # fetch_ohlcv(symbol, timeframe, since, limit)
             # limit=60 akan mengambil 60 candle terakhir
-            ohlcv = exchange.fetch_ohlcv(ticker, timeframe='1d', limit=60)
+            ohlcv = ex.fetch_ohlcv(ticker, timeframe='1d', limit=60)
             
             if ohlcv and len(ohlcv) > 0:
                 # Kolom response dari fetch_ohlcv: [Timestamp, Open, High, Low, Close, Volume]
@@ -137,8 +136,9 @@ def get_price_data(symbols):
         # Mengubah nilai yg mungkin None/NaN menjadi format float yang bisa difilter
         df_results['Relative_Strength_R'] = pd.to_numeric(df_results['Relative_Strength_R'], errors='coerce')
         
-        # HANYA menampilkan koin dengan R < 2.0 (Drop NaN/None yang tidak valid)
-        df_filtered = df_results[df_results['Relative_Strength_R'] < 2.0].copy()
+# HANYA menampilkan koin dengan R < 2.0 (Drop NaN/None yang tidak valid)
+        # SEMENTARA DIMATIKAN UNTUK TESTING UI:
+        df_filtered = df_results.copy()
         
         # Urutkan dari R terkecil hingga terbesar
         df_filtered = df_filtered.sort_values(by='Relative_Strength_R', ascending=True)
