@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genuine Alpha Screener</title>
+    <!-- Use Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Background Decorators -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <div class="container glass-panel">
+        <header>
+            <div class="logo">
+                <span class="icon">⚡</span>
+                <h1>Genuine Alpha Screener</h1>
+            </div>
+            <p class="subtitle">Discover altcoins outperforming Bitcoin with Relative Strength analysis.</p>
+        </header>
+
+        <section class="controls">
+            <button id="scan-btn" class="glow-on-hover">
+                <span class="btn-text">Start Market Scan</span>
+                <span class="btn-icon">➔</span>
+            </button>
+        </section>
+
+        <!-- Loading Skeleton (Hidden by default) -->
+        <div id="loader" class="loader-container hidden">
+            <div class="spinner"></div>
+            <p>Scanning Top 100 Coins & Calculating Relative Strength...</p>
+            <p class="small-text">This usually takes around 10-15 seconds.</p>
+        </div>
+
+        <!-- Error Message Container (Hidden by default) -->
+        <div id="error-msg" class="error-container hidden">
+            <p id="error-text">An error occurred while fetching data.</p>
+        </div>
+
+        <!-- Results Table (Hidden by default) -->
+        <div id="results-container" class="results-container hidden">
+            <div class="table-header">
+                <h2>Active Watchlist <span class="badge">R &lt; 2.0</span></h2>
+                <div class="stats" id="scan-stats">Found 0 coins</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Ticker</th>
+                            <th>Last Close</th>
+                            <th>60D High</th>
+                            <th>Drawdown (%)</th>
+                            <th>Relative Strength (R)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

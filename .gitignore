@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Project details
+.vscode/
