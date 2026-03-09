@@ -28,7 +28,12 @@ def get_top_100_coins():
     }
     
     # Daftar stablecoin yang harus diabaikan
-    stablecoins = ['USDT', 'USDC', 'DAI', 'FDUSD', 'TUSD', 'USDD']
+    stablecoins = [
+        'USDT', 'USDC', 'DAI', 'FDUSD', 'TUSD', 'USDD',
+        'BFUSD', 'USDE', 'USD1', 'RLUSD', 'USDS', 'PYUSD', 
+        'USYC', 'BUIDL', 'USDF', 'USDG', 'USDY', 'USTB', 
+        'EUTBL', 'USDTB', 'OUSG', 'GHO', 'USD0'
+    ]
     symbols = []
     
     try:
@@ -90,6 +95,16 @@ def get_price_data(symbols):
                 else:
                     drawdown = 0.0
                 
+                # Filter tambahan untuk stablecoin tak langsung:
+                # 1. Harga berkisar antara 0.995 hingga 1.005
+                # 2. Drawdown sangat kecil (kurang dari 1.0%)
+                is_stablecoin_peg = 0.995 <= last_close <= 1.005
+                is_low_volatility = drawdown < 1.0
+                
+                if symbol != 'BTC' and (is_stablecoin_peg or is_low_volatility):
+                    # Identifikasi sebagai stablecoin yang tidak terfilter di awal
+                    continue
+                
                 results.append({
                     'Symbol': symbol,
                     'Ticker': ticker,
@@ -98,10 +113,14 @@ def get_price_data(symbols):
                     'Drawdown (%)': drawdown
                 })
             else:
-                print(f"Data kosong untuk {ticker}")
+                pass # Abaikan log data kosong agar tidak berisik
                 
         except Exception as e:
-            print(f"Error mengambil data {ticker}: {e}")
+            error_msg = str(e)
+            if "does not have market symbol" in error_msg:
+                pass # Abaikan koin yang memang tidak ada di Binance Spot
+            else:
+                print(f"Error mengambil data {ticker}: {error_msg}")
             
         # Jeda 0.1 detik untuk menghindari Rate Limit Binance
         time.sleep(0.1)
@@ -136,9 +155,8 @@ def get_price_data(symbols):
         # Mengubah nilai yg mungkin None/NaN menjadi format float yang bisa difilter
         df_results['Relative_Strength_R'] = pd.to_numeric(df_results['Relative_Strength_R'], errors='coerce')
         
-# HANYA menampilkan koin dengan R < 2.0 (Drop NaN/None yang tidak valid)
-        # SEMENTARA DIMATIKAN UNTUK TESTING UI:
-        df_filtered = df_results.copy()
+        # HANYA menampilkan koin dengan R < 2.0 (Drop NaN/None yang tidak valid)
+        df_filtered = df_results[df_results['Relative_Strength_R'] < 2.0].copy()
         
         # Urutkan dari R terkecil hingga terbesar
         df_filtered = df_filtered.sort_values(by='Relative_Strength_R', ascending=True)
