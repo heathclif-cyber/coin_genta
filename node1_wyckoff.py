@@ -2,6 +2,7 @@ import pandas as pd
 import pandas_ta as ta
 import ccxt
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Module-level variable for Binance API
 binance = None
@@ -155,6 +156,39 @@ def analyze_wyckoff_phase(df):
         'end_date': df.iloc[-1]['timestamp']
     }
 
+def process_single_symbol(symbol):
+    """
+    Worker function to process a single symbol for Node 1.
+    """
+    print(f"\n{'─' * 40}")
+    print(f"  Analyzing: {symbol}")
+    print(f"{'─' * 40}")
+    
+    # Step 1: Fetch long-term data
+    df = get_long_term_data(symbol)
+    if df is None:
+        print(f"  [SKIP] Could not fetch data for {symbol}")
+        return None
+    
+    # Step 2: Analyze Wyckoff Phase and apply Kill Switches
+    result = analyze_wyckoff_phase(df)
+    if result is None:
+        print(f"  [SKIP] Could not analyze {symbol}")
+        return None
+    
+    # Step 3: Only return data if it passed all VCP filters
+    if result.get('is_valid', False):
+        return {
+            'Symbol': symbol,
+            'Start Date': result['start_date'].strftime('%Y-%m-%d'),
+            'End Date': result['end_date'].strftime('%Y-%m-%d'),
+            'Volume Dry-Up (%)': round(result['vol_dry_up_pct'], 2),
+            'ATR Shrinkage (%)': round(result['atr_shrinkage_pct'], 2),
+            'Price Range (%)': round(result['price_range_pct'], 2),
+            'VPA Signal': result['vpa_signal'],
+        }
+    return None
+
 def main_node1(watchlist_symbols):
     """
     Main function for Node 1: Wyckoff Price Structure.
@@ -169,37 +203,31 @@ def main_node1(watchlist_symbols):
     
     passed_coins = []
     
-    for symbol in watchlist_symbols:
-        print(f"\n{'─' * 40}")
-        print(f"  Analyzing: {symbol}")
-        print(f"{'─' * 40}")
+    # Use ThreadPoolExecutor for concurrent processing
+    # Adjust max_workers as needed (10 is a good starting point for API/IO bound tasks)
+    max_workers = min(10, len(watchlist_symbols)) if watchlist_symbols else 1
+    
+    print(f"[*] Processing {len(watchlist_symbols)} coins concurrently with {max_workers} threads...")
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit tasks to the executor
+        future_to_symbol = {
+            executor.submit(process_single_symbol, symbol): symbol 
+            for symbol in watchlist_symbols
+        }
         
-        # Step 1: Fetch long-term data
-        df = get_long_term_data(symbol)
-        if df is None:
-            print(f"  [SKIP] Could not fetch data for {symbol}")
-            continue
-        
-        # Step 2: Analyze Wyckoff Phase and apply Kill Switches
-        result = analyze_wyckoff_phase(df)
-        if result is None:
-            print(f"  [SKIP] Could not analyze {symbol}")
-            continue
-        
-        # Step 3: Only collect coins that passed all VCP filters
-        if result['is_valid']:
-            passed_coins.append({
-                'Symbol': symbol,
-                'Start Date': result['start_date'].strftime('%Y-%m-%d'),
-                'End Date': result['end_date'].strftime('%Y-%m-%d'),
-                'Volume Dry-Up (%)': round(result['vol_dry_up_pct'], 2),
-                'ATR Shrinkage (%)': round(result['atr_shrinkage_pct'], 2),
-                'Price Range (%)': round(result['price_range_pct'], 2),
-                'VPA Signal': result['vpa_signal'],
-            })
-        
-        # Respect API rate limits
-        time.sleep(0.1)
+        # Collect results as they complete
+        for future in as_completed(future_to_symbol):
+            symbol = future_to_symbol[future]
+            try:
+                result = future.result()
+                if result:
+                    passed_coins.append(result)
+            except Exception as exc:
+                print(f"  [!] Error processing {symbol}: {exc}")
+            
+            # Very short sleep to gently space out potentially concurrent API requests
+            time.sleep(0.1)
     
     # Build final DataFrame of passed coins only
     print("\n" + "=" * 60)

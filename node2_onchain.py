@@ -2,6 +2,7 @@ import pandas as pd
 import time
 import random
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # =========================================================
 # Node 2: On-Chain Data Analysis (CryptoQuant API)
@@ -149,6 +150,52 @@ def check_ssr_index(symbol, global_ssr_result):
     
     return is_valid, desc, "Simulated"
 
+def process_coin_node2(coin, global_ssr_result):
+    """
+    Worker function to process a single coin for Node 2.
+    """
+    symbol = coin['Symbol']
+    print(f"\n[*] Running On-Chain verification for {symbol}...")
+    
+    # 1. Netflow Filter (CQ API)
+    netflow_pass, netflow_desc, netflow_src = check_netflow(symbol)
+    
+    # 2. Wallet Age Filter (Simulated Mock)
+    wallet_pass, wallet_desc, wallet_src = filter_wallet_age(symbol)
+    
+    # 3. SSR Filter (Global CQ or Mock)
+    ssr_pass, ssr_desc, ssr_src = check_ssr_index(symbol, global_ssr_result)
+    
+    # Overall Validation: Requires ALL 3 to pass
+    overall_valid = netflow_pass and wallet_pass and ssr_pass
+    
+    print(f"    [{symbol}] Netflow: {netflow_desc}")
+    print(f"    [{symbol}] Wallet Age: {wallet_desc}")
+    print(f"    [{symbol}] SSR Index: {ssr_desc}")
+    
+    # Determine strict data source label for the whole coin run
+    if "CryptoQuant" in netflow_src or "CryptoQuant" in ssr_src:
+        final_data_source = "CryptoQuant T-1"
+    else:
+        final_data_source = "Simulated"
+    
+    if overall_valid:
+        print(f"    => SUCCESS: {symbol} Node 2 Passed! ({final_data_source})")
+        return {
+            'Symbol': symbol,
+            'VCP Start Date': coin.get('Start Date', '-'),
+            'VCP End Date': coin.get('End Date', '-'),
+            'VPA Signal': coin.get('VPA Signal', '-'),
+            'Netflow Status': netflow_desc,
+            'Wallet Age Ratio': wallet_desc,
+            'SSR Status': ssr_desc,
+            'Data Source': final_data_source,
+            'Overall On-Chain Validation': '🟢 Passed'
+        }
+    else:
+        print(f"    => FAILED: {symbol} did not meet all 3 on-chain criteria.")
+        return None
+
 def main_node2(passed_vcp_coins):
     """
     Receives list of dictionaries from Node 1 (VCP phase).
@@ -173,50 +220,31 @@ def main_node2(passed_vcp_coins):
     else:
         print("    => Failed. Using simulated SSR per coin.")
         
-    for coin in passed_vcp_coins:
-        symbol = coin['Symbol']
-        print(f"\n[*] Running On-Chain verification for {symbol}...")
+    # Use ThreadPoolExecutor for concurrent processing
+    # Adjust max_workers as needed (10 is a good starting point for I/O bound tasks)
+    max_workers = min(10, len(passed_vcp_coins)) if passed_vcp_coins else 1
+    
+    print(f"[*] Processing {len(passed_vcp_coins)} coins concurrently with {max_workers} threads...")
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit tasks to the executor
+        future_to_coin = {
+            executor.submit(process_coin_node2, coin, global_ssr_result): coin 
+            for coin in passed_vcp_coins
+        }
         
-        # 1. Netflow Filter (CQ API)
-        netflow_pass, netflow_desc, netflow_src = check_netflow(symbol)
-        
-        # 2. Wallet Age Filter (Simulated Mock)
-        wallet_pass, wallet_desc, wallet_src = filter_wallet_age(symbol)
-        
-        # 3. SSR Filter (Global CQ or Mock)
-        ssr_pass, ssr_desc, ssr_src = check_ssr_index(symbol, global_ssr_result)
-        
-        # Overall Validation: Requires ALL 3 to pass
-        overall_valid = netflow_pass and wallet_pass and ssr_pass
-        
-        print(f"    - Netflow: {netflow_desc}")
-        print(f"    - Wallet Age: {wallet_desc}")
-        print(f"    - SSR Index: {ssr_desc}")
-        
-        # Determine strict data source label for the whole coin run
-        if "CryptoQuant" in netflow_src or "CryptoQuant" in ssr_src:
-            final_data_source = "CryptoQuant T-1"
-        else:
-            final_data_source = "Simulated"
-        
-        if overall_valid:
-            print(f"    => SUCCESS: Node 2 Passed! ({final_data_source})")
-            onchain_passed_coins.append({
-                'Symbol': symbol,
-                'VCP Start Date': coin.get('Start Date', '-'),
-                'VCP End Date': coin.get('End Date', '-'),
-                'VPA Signal': coin.get('VPA Signal', '-'), # Pass VPA alongside
-                'Netflow Status': netflow_desc,
-                'Wallet Age Ratio': wallet_desc,
-                'SSR Status': ssr_desc,
-                'Data Source': final_data_source,  # Expose to UI
-                'Overall On-Chain Validation': '🟢 Passed'
-            })
-        else:
-            print("    => FAILED: Did not meet all 3 on-chain criteria.")
+        # Collect results as they complete
+        for future in as_completed(future_to_coin):
+            coin = future_to_coin[future]
+            try:
+                result = future.result()
+                if result:
+                    onchain_passed_coins.append(result)
+            except Exception as exc:
+                print(f"    [!] Error processing {coin['Symbol']}: {exc}")
             
-        # Respect CryptoQuant rate limits strictly (e.g. max requests per sec/min)
-        time.sleep(0.5)
+            # Very short sleep to gently space out potentially concurrent API requests
+            time.sleep(0.1)
             
     print("\n" + "=" * 60)
     print("  FINAL NODE 2 RESULT (CLEARED ALL VCP + ON-CHAIN)")
