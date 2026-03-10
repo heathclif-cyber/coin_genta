@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 data.forEach(coin => {
                     const row = document.createElement('tr');
+                    const cleanSymbol = coin.Symbol.includes('/') ? coin.Symbol.split('/')[0] : coin.Symbol;
                     const lastCloseStr = `$${parseFloat(coin['Last Close']).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
                     const highStr = `$${parseFloat(coin['60D High']).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
                     const drawdownStr = parseFloat(coin['Drawdown (%)']).toFixed(2) + '%';
@@ -67,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     row.innerHTML = `
                         <td class="symbol-cell">
-                            <img src="https://assets.coincap.io/assets/icons/${coin.Symbol.replace('/USDT', '').toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.Symbol}&background=random&color=fff&rounded=true'" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
-                            ${coin.Symbol}
+                            <img src="https://assets.coincap.io/assets/icons/${cleanSymbol.toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${cleanSymbol}&background=random&color=fff&rounded=true'" alt="${cleanSymbol}" width="28" height="28" style="borderRadius:50%">
+                            ${cleanSymbol}
                         </td>
                         <td style="color: var(--text-muted)">${coin.Ticker}</td>
                         <td class="number-cell">${lastCloseStr}</td>
@@ -145,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 data.forEach(coin => {
                     const row = document.createElement('tr');
+                    const cleanSymbol = coin.Symbol.includes('/') ? coin.Symbol.split('/')[0] : coin.Symbol;
                     const volDryUp = parseFloat(coin['Volume Dry-Up (%)']).toFixed(2);
                     const atrShrink = parseFloat(coin['ATR Shrinkage (%)']).toFixed(2);
                     const priceRange = parseFloat(coin['Price Range (%)']).toFixed(2);
@@ -154,8 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     row.innerHTML = `
                         <td class="symbol-cell">
-                            <img src="https://assets.coincap.io/assets/icons/${coin.Symbol.replace('/USDT', '').toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.Symbol}&background=random&color=fff&rounded=true'" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
-                            ${coin.Symbol}
+                            <img src="https://assets.coincap.io/assets/icons/${cleanSymbol.toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${cleanSymbol}&background=random&color=fff&rounded=true'" alt="${cleanSymbol}" width="28" height="28" style="borderRadius:50%">
+                            ${cleanSymbol}
                         </td>
                         <td class="number-cell" style="font-size: 0.85rem;">${timeframe}</td>
                         <td class="number-cell value-compression">${volDryUp}%</td>

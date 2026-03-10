@@ -443,13 +443,14 @@ h1 {
 
 table {
     width: 100%;
+    table-layout: auto;
     border-collapse: collapse;
     text-align: left;
 }
 
 th,
 td {
-    padding: 1rem 1.5rem;
+    padding: 1.2rem 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     text-align: center;
     vertical-align: middle;
@@ -468,7 +469,7 @@ thead th {
     top: 0;
     z-index: 10;
     background-color: var(--bg-dark);
-    border-bottom: 2px solid var(--glass-border);
+    border-bottom: 2px solid var(--accent-solid);
 }
 
 tbody tr {
@@ -484,9 +485,14 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 700;
     color: #fff;
+    width: 100%;
+}
+
+.symbol-cell img {
+    margin: 0;
 }
 
 .number-cell {
