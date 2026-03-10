@@ -18,8 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const step1 = document.getElementById('step-1-indicator');
     const step2 = document.getElementById('step-2-indicator');
 
+    // PDF elements
+    const pdfBtn = document.getElementById('pdf-btn');
+
     // Store screener data for passing to Wyckoff
     let screenerData = [];
+    let wyckoffPassedData = []; // Store passed data for PDF
 
     // ============================
     // Step 1: Market Screener
@@ -113,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
         wyckoffResults.classList.add('hidden');
         wyckoffError.classList.add('hidden');
         wyckoffTableBody.innerHTML = '';
+        pdfBtn.classList.add('hidden'); // Hide PDF button during analysis
+        wyckoffPassedData = [];
 
         // Activate Step 2 indicator
         step2.classList.add('active');
@@ -132,6 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.length === 0) {
                     wyckoffStats.innerText = 'No coins passed VCP validation';
+                } else {
+                    wyckoffPassedData = data; // Cache for PDF
+                    pdfBtn.classList.remove('hidden'); // Show PDF button
                 }
 
                 data.forEach(coin => {
@@ -140,12 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const atrShrink = parseFloat(coin['ATR Shrinkage (%)']).toFixed(2);
                     const priceRange = parseFloat(coin['Price Range (%)']).toFixed(2);
 
+                    // Format Timeframe Start - End
+                    const timeframe = `${coin['Start Date']} - ${coin['End Date']}`;
+
                     row.innerHTML = `
                         <td class="symbol-cell">
                             <img src="https://ui-avatars.com/api/?name=${coin.Symbol.replace('/USDT', '')}&background=10b981&color=fff&rounded=true&size=32" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
                             ${coin.Symbol}
                         </td>
-                        <td class="number-cell">${coin['Date']}</td>
+                        <td class="number-cell" style="font-size: 0.85rem;">${timeframe}</td>
                         <td class="number-cell value-compression">${volDryUp}%</td>
                         <td class="number-cell value-compression">${atrShrink}%</td>
                         <td class="number-cell value-compression">${priceRange}%</td>
@@ -175,5 +187,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 wyckoffResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
+    });
+
+    // ============================
+    // PDF Generation Logic
+    // ============================
+    pdfBtn.addEventListener('click', () => {
+        if (wyckoffPassedData.length === 0) return;
+
+        const doc = new window.jspdf.jsPDF();
+
+        // Header
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("NODE 1: VCP INSTITUTIONAL REPORT", 14, 22);
+
+        // Sub-header (Date)
+        const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Printed on: ${today}`, 14, 30);
+
+        // Context Info
+        const firstCoin = wyckoffPassedData[0];
+        doc.text(`Analysis Timeframe: ${firstCoin['Start Date']} to ${firstCoin['End Date']} (500 Candle 4H)`, 14, 38);
+
+        // Prepare data for table
+        const tableColumn = ["Symbol", "Timeframe", "Vol Dry-Up (%)", "ATR Shrink (%)", "Price Range (%)", "Status"];
+        const tableRows = [];
+
+        wyckoffPassedData.forEach(coin => {
+            const coinData = [
+                coin.Symbol,
+                `${coin['Start Date']} to ${coin['End Date']}`,
+                `${parseFloat(coin['Volume Dry-Up (%)']).toFixed(2)}%`,
+                `${parseFloat(coin['ATR Shrinkage (%)']).toFixed(2)}%`,
+                `${parseFloat(coin['Price Range (%)']).toFixed(2)}%`,
+                "Passed"
+            ];
+            tableRows.push(coinData);
+        });
+
+        // Generate AutoTable
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 45,
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [240, 240, 245] },
+            margin: { top: 45 }
+        });
+
+        // Save PDF
+        doc.save("Node1_VCP_Report.pdf");
     });
 });

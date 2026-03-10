@@ -434,6 +434,8 @@ h1 {
 
 .table-wrapper {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--glass-border);
@@ -457,7 +459,10 @@ th {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(20, 20, 30, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 tbody tr {

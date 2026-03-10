@@ -112,7 +112,13 @@
         <div id="wyckoff-results" class="results-container hidden">
             <div class="table-header">
                 <h2>Node 1: VCP Validated <span class="badge badge-green">Passed</span></h2>
-                <div class="stats" id="wyckoff-stats">Found 0 coins</div>
+                <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
+                    <div class="stats" id="wyckoff-stats">Found 0 coins</div>
+                    <button id="pdf-btn" class="glow-on-hover hidden"
+                        style="width: auto; height: 36px; padding: 0 15px; font-size: 0.9rem; background: #6366f1; border-radius: 8px;">
+                        <span class="btn-text">Download PDF Report</span>
+                    </button>
+                </div>
             </div>
             <div class="table-wrapper">
                 <table id="wyckoff-table">
@@ -133,6 +139,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 

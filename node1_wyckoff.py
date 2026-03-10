@@ -135,7 +135,8 @@ def analyze_wyckoff_phase(df):
         'vol_dry_up_pct': vol_dry_up_pct,
         'atr_shrinkage_pct': atr_shrinkage_pct,
         'price_range_pct': price_range_pct,
-        'sc_date': df.iloc[-1]['timestamp'] # Provide latest date for UI compatibility
+        'start_date': df.iloc[0]['timestamp'],
+        'end_date': df.iloc[-1]['timestamp']
     }
 
 def main_node1(watchlist_symbols):
@@ -173,7 +174,8 @@ def main_node1(watchlist_symbols):
         if result['is_valid']:
             passed_coins.append({
                 'Symbol': symbol,
-                'Date': result['sc_date'].strftime('%Y-%m-%d'),
+                'Start Date': result['start_date'].strftime('%Y-%m-%d'),
+                'End Date': result['end_date'].strftime('%Y-%m-%d'),
                 'Volume Dry-Up (%)': round(result['vol_dry_up_pct'], 2),
                 'ATR Shrinkage (%)': round(result['atr_shrinkage_pct'], 2),
                 'Price Range (%)': round(result['price_range_pct'], 2),
@@ -189,6 +191,10 @@ def main_node1(watchlist_symbols):
     
     if passed_coins:
         result_df = pd.DataFrame(passed_coins)
+        
+        # Sort by Price Range (Tightest to Widest)
+        result_df = result_df.sort_values(by='Price Range (%)', ascending=True).reset_index(drop=True)
+        
         print(result_df.to_string(index=False))
         return result_df
     else:
