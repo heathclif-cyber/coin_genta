@@ -465,6 +465,11 @@ th {
     letter-spacing: 0.5px;
 }
 
+th:first-child {
+    text-align: left;
+    padding-left: 3rem;
+}
+
 thead th {
     position: sticky;
     top: 0;
@@ -491,11 +496,11 @@ tbody tr:hover {
 .symbol-cell {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 12px;
     font-weight: 700;
     color: #fff;
-    width: 100%;
+    padding-left: 3rem;
 }
 
 .symbol-cell img {
