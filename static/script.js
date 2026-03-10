@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="number-cell value-compression">${volDryUp}%</td>
                         <td class="number-cell value-compression">${atrShrink}%</td>
                         <td class="number-cell value-compression">${priceRange}%</td>
+                        <td class="number-cell">${coin['VPA Signal']}</td>
                         <td><span class="status-badge status-passed">✓ Passed</span></td>
                     `;
                     wyckoffTableBody.appendChild(row);
@@ -213,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Analysis Timeframe: ${firstCoin['Start Date']} to ${firstCoin['End Date']} (500 Candle 4H)`, 14, 38);
 
         // Prepare data for table
-        const tableColumn = ["Symbol", "Timeframe", "Vol Dry-Up (%)", "ATR Shrink (%)", "Price Range (%)", "Status"];
+        const tableColumn = ["Symbol", "Timeframe", "Vol Dry-Up (%)", "ATR Shrink (%)", "Price Range (%)", "VPA Signal", "Status"];
         const tableRows = [];
 
         wyckoffPassedData.forEach(coin => {
@@ -223,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `${parseFloat(coin['Volume Dry-Up (%)']).toFixed(2)}%`,
                 `${parseFloat(coin['ATR Shrinkage (%)']).toFixed(2)}%`,
                 `${parseFloat(coin['Price Range (%)']).toFixed(2)}%`,
+                coin['VPA Signal'],
                 "Passed"
             ];
             tableRows.push(coinData);

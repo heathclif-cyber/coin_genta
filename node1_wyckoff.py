@@ -122,6 +122,21 @@ def analyze_wyckoff_phase(df):
     print(f" - 60-candle Avg Price: {avg_price:.4f}")
     print(f"   => Price Range: {price_range_pct:.2f}% (Valid: {range_valid})")
     
+    # --- 4. VPA Anomaly Detection (Volume Price Analysis) ---
+    current_vol = df['volume'].iloc[-1]
+    ma20_vol = df['SMA_20_Vol'].iloc[-1]
+    current_atr = df['ATRr_14'].iloc[-1]
+    min_atr_14 = df['ATRr_14'].tail(14).min()
+    price_change_pct = abs((df['close'].iloc[-1] - df['close'].iloc[-2]) / df['close'].iloc[-2]) * 100
+    
+    vpa_signal = '-'
+    if current_vol > (2 * ma20_vol) and price_change_pct < 2.0:
+        vpa_signal = '🟢 Absorption'
+    elif current_vol < (0.5 * ma20_vol) and current_atr <= min_atr_14:
+        vpa_signal = '🔴 Dry Up'
+        
+    print(f" - VPA Signal: {vpa_signal}")
+    
     # --- Final Validation ---
     is_valid_vcp = vol_valid and atr_valid and range_valid
     
@@ -135,6 +150,7 @@ def analyze_wyckoff_phase(df):
         'vol_dry_up_pct': vol_dry_up_pct,
         'atr_shrinkage_pct': atr_shrinkage_pct,
         'price_range_pct': price_range_pct,
+        'vpa_signal': vpa_signal,
         'start_date': df.iloc[0]['timestamp'],
         'end_date': df.iloc[-1]['timestamp']
     }
@@ -179,6 +195,7 @@ def main_node1(watchlist_symbols):
                 'Volume Dry-Up (%)': round(result['vol_dry_up_pct'], 2),
                 'ATR Shrinkage (%)': round(result['atr_shrinkage_pct'], 2),
                 'Price Range (%)': round(result['price_range_pct'], 2),
+                'VPA Signal': result['vpa_signal'],
             })
         
         # Respect API rate limits
