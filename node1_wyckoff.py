@@ -24,9 +24,9 @@ def init_binance():
 def get_long_term_data(symbol):
     init_binance()
     try:
-        print(f"Fetching 180 days of 1d data for {symbol}...")
-        # Fetch daily data (1d) for the last 180 days
-        ohlcv = binance.fetch_ohlcv(symbol, '1d', limit=180)
+        print(f"Fetching 500 candles of 4h data for {symbol}...")
+        # Fetch 4-hour data ('4h') for the last 500 candles
+        ohlcv = binance.fetch_ohlcv(symbol, '4h', limit=500)
         
         # Convert to Pandas DataFrame
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
@@ -56,7 +56,7 @@ def analyze_wyckoff_phase(df):
     3. Tight Range Action
     """
     if df is None or df.empty or len(df) < 60:
-        print("Data is empty or insufficient (< 60 days). Cannot analyze VCP.")
+        print("Data is empty or insufficient (< 60 candles). Cannot analyze VCP.")
         return None
 
     print("\nAnalyzing Volatility Contraction Pattern (VCP)...")
@@ -74,8 +74,8 @@ def analyze_wyckoff_phase(df):
     if vol_ma20 > 0:
         vol_dry_up_pct = (1 - (vol_current / vol_ma20)) * 100
         
-    # Condition: vol_current <= vol_ma20 * 0.7  => (dry up >= 30%)
-    vol_valid = vol_current <= (vol_ma20 * 0.70)
+    # Condition: vol_current <= vol_ma20 * 0.90  => (dry up >= 10%)
+    vol_valid = vol_current <= (vol_ma20 * 0.90)
     
     print(f" - Vol Current (3d avg): {vol_current:.2f}")
     print(f" - Vol MA20: {vol_ma20:.2f}")
@@ -94,19 +94,19 @@ def analyze_wyckoff_phase(df):
     if atr_peak > 0:
         atr_shrinkage_pct = (1 - (atr_current / atr_peak)) * 100
         
-    # Condition: atr_current <= atr_peak * 0.50 => (shrinkage >= 50%)
-    atr_valid = atr_current <= (atr_peak * 0.50)
+    # Condition: atr_current <= atr_peak * 0.80 => (shrinkage >= 20%)
+    atr_valid = atr_current <= (atr_peak * 0.80)
     
     print(f" - ATR Current (3d avg): {atr_current:.4f}")
     print(f" - Peak ATR (60d): {atr_peak:.4f}")
     print(f"   => ATR Shrinkage: {atr_shrinkage_pct:.2f}% (Valid: {atr_valid})")
 
     # --- 3. Tight Range Action ---
-    # Max High, Min Low, and Avg Close over the last 21 days
-    last_21_days = df.tail(21)
-    max_high = last_21_days['high'].max()
-    min_low = last_21_days['low'].min()
-    avg_price = last_21_days['close'].mean()
+    # Max High, Min Low, and Avg Close over the last 60 candles
+    last_60_candles = df.tail(60)
+    max_high = last_60_candles['high'].max()
+    min_low = last_60_candles['low'].min()
+    avg_price = last_60_candles['close'].mean()
     
     price_range = max_high - min_low
     
@@ -115,11 +115,11 @@ def analyze_wyckoff_phase(df):
     if avg_price > 0:
         price_range_pct = (price_range / avg_price) * 100
         
-    # Condition: price_range < avg_price * 0.10 => (range < 10%)
-    range_valid = price_range_pct < 10.0
+    # Condition: price_range < avg_price * 0.20 => (range < 20%)
+    range_valid = price_range_pct < 20.0
     
-    print(f" - 21d Max High: {max_high:.4f}, Min Low: {min_low:.4f}")
-    print(f" - 21d Avg Price: {avg_price:.4f}")
+    print(f" - 60-candle Max High: {max_high:.4f}, Min Low: {min_low:.4f}")
+    print(f" - 60-candle Avg Price: {avg_price:.4f}")
     print(f"   => Price Range: {price_range_pct:.2f}% (Valid: {range_valid})")
     
     # --- Final Validation ---
