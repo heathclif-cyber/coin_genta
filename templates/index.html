@@ -38,8 +38,8 @@
             <div class="step" id="step-2-indicator">
                 <div class="step-number">2</div>
                 <div class="step-info">
-                    <span class="step-title">Node 1: Wyckoff</span>
-                    <span class="step-desc">Volume & ATR Compression</span>
+                    <span class="step-title">Node 1: VCP</span>
+                    <span class="step-desc">Volatility Contraction</span>
                 </div>
             </div>
         </div>
@@ -90,7 +90,7 @@
             <!-- Step 2: Wyckoff Analysis Button (appears after Screener) -->
             <section class="controls wyckoff-controls">
                 <button id="wyckoff-btn" class="glow-on-hover wyckoff-btn">
-                    <span class="btn-text">Run Wyckoff Analysis</span>
+                    <span class="btn-text">Run VCP Analysis</span>
                     <span class="btn-icon">⚡</span>
                 </button>
             </section>
@@ -99,19 +99,19 @@
         <!-- Step 2 Loader -->
         <div id="wyckoff-loader" class="loader-container hidden">
             <div class="spinner spinner-green"></div>
-            <p>Analyzing Wyckoff Phase A Structure...</p>
-            <p class="small-text">Fetching 180-day data & computing Volume/ATR compression for each coin.</p>
+            <p>Analyzing Volatility Contraction Pattern (VCP)...</p>
+            <p class="small-text">Fetching 180-day data & verifying 3 strict kill switches for each coin.</p>
         </div>
 
         <!-- Step 2 Error -->
         <div id="wyckoff-error" class="error-container hidden">
-            <p id="wyckoff-error-text">An error occurred during Wyckoff analysis.</p>
+            <p id="wyckoff-error-text">An error occurred during VCP analysis.</p>
         </div>
 
         <!-- Step 2 Results Table -->
         <div id="wyckoff-results" class="results-container hidden">
             <div class="table-header">
-                <h2>Node 1: Wyckoff Validated <span class="badge badge-green">Passed</span></h2>
+                <h2>Node 1: VCP Validated <span class="badge badge-green">Passed</span></h2>
                 <div class="stats" id="wyckoff-stats">Found 0 coins</div>
             </div>
             <div class="table-wrapper">
@@ -119,10 +119,10 @@
                     <thead>
                         <tr>
                             <th>Symbol</th>
-                            <th>SC Date</th>
-                            <th>SC Close</th>
-                            <th>Volume Drop (%)</th>
-                            <th>ATR Drop (%)</th>
+                            <th>Date</th>
+                            <th>Volume Dry-Up (%)</th>
+                            <th>ATR Shrinkage (%)</th>
+                            <th>Price Range (%)</th>
                             <th>Status</th>
                         </tr>
                     </thead>

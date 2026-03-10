@@ -131,24 +131,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 wyckoffStats.innerText = `${data.length} coins passed validation`;
 
                 if (data.length === 0) {
-                    wyckoffStats.innerText = 'No coins passed Wyckoff validation';
+                    wyckoffStats.innerText = 'No coins passed VCP validation';
                 }
 
                 data.forEach(coin => {
                     const row = document.createElement('tr');
-                    const scCloseStr = `$${parseFloat(coin['SC Close']).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
-                    const volDrop = parseFloat(coin['Volume Drop (%)']).toFixed(2);
-                    const atrDrop = parseFloat(coin['ATR Drop (%)']).toFixed(2);
+                    const volDryUp = parseFloat(coin['Volume Dry-Up (%)']).toFixed(2);
+                    const atrShrink = parseFloat(coin['ATR Shrinkage (%)']).toFixed(2);
+                    const priceRange = parseFloat(coin['Price Range (%)']).toFixed(2);
 
                     row.innerHTML = `
                         <td class="symbol-cell">
                             <img src="https://ui-avatars.com/api/?name=${coin.Symbol.replace('/USDT', '')}&background=10b981&color=fff&rounded=true&size=32" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
                             ${coin.Symbol}
                         </td>
-                        <td class="number-cell">${coin['SC Date']}</td>
-                        <td class="number-cell">${scCloseStr}</td>
-                        <td class="number-cell value-compression">${volDrop}%</td>
-                        <td class="number-cell value-compression">${atrDrop}%</td>
+                        <td class="number-cell">${coin['Date']}</td>
+                        <td class="number-cell value-compression">${volDryUp}%</td>
+                        <td class="number-cell value-compression">${atrShrink}%</td>
+                        <td class="number-cell value-compression">${priceRange}%</td>
                         <td><span class="status-badge status-passed">✓ Passed</span></td>
                     `;
                     wyckoffTableBody.appendChild(row);
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 wyckoffResults.classList.remove('hidden');
             } else {
-                throw new Error(result.message || "Wyckoff analysis failed.");
+                throw new Error(result.message || "VCP analysis failed.");
             }
         } catch (error) {
             console.error(error);
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             wyckoffError.classList.remove('hidden');
         } finally {
             wyckoffBtn.disabled = false;
-            wyckoffBtn.innerHTML = '<span class="btn-text">Run Wyckoff Analysis</span><span class="btn-icon">⚡</span>';
+            wyckoffBtn.innerHTML = '<span class="btn-text">Run VCP Analysis</span><span class="btn-icon">⚡</span>';
             wyckoffLoader.classList.add('hidden');
 
             if (!wyckoffResults.classList.contains('hidden')) {

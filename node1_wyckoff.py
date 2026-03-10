@@ -35,6 +35,9 @@ def get_long_term_data(symbol):
         # Calculate ATR (Average True Range) period 14
         df.ta.atr(length=14, append=True)
         
+        # Calculate 20-day Simple Moving Average (SMA) of Volume
+        df['SMA_20_Vol'] = df['volume'].rolling(window=20).mean()
+        
         # Drop rows with NaN values (e.g., the first 14 rows due to ATR calculation)
         df.dropna(inplace=True)
         df.reset_index(drop=True, inplace=True)
@@ -46,82 +49,93 @@ def get_long_term_data(symbol):
 
 def analyze_wyckoff_phase(df):
     """
-    Analyzes the DataFrame to find Wyckoff Phase A characteristics,
-    specifically the Selling Climax (SC).
+    Analyzes the DataFrame for Volatility Contraction Pattern (VCP) characteristics.
+    Requires 3 conditions to pass:
+    1. Volume Dry-Up
+    2. ATR Contraction
+    3. Tight Range Action
     """
-    if df is None or df.empty:
-        print("Data is empty. Cannot analyze Wyckoff phases.")
+    if df is None or df.empty or len(df) < 60:
+        print("Data is empty or insufficient (< 60 days). Cannot analyze VCP.")
         return None
 
-    print("\nAnalyzing Wyckoff Phase A - Selling Climax (SC)...")
+    print("\nAnalyzing Volatility Contraction Pattern (VCP)...")
     
-    # Target the first half of the data (e.g., first 90 days out of 180 original days)
-    # Note: df already has some rows dropped due to ATR calculation (NaNs), 
-    # so we take roughly the first half of the remaining data
-    half_length = len(df) // 2
-    first_half_df = df.iloc[:half_length].copy()
+    # --- 1. Volume Dry-Up ---
+    # Average volume of the last 3 days
+    last_3_days = df.tail(3)
+    vol_current = last_3_days['volume'].mean()
     
-    # Find down days (Close < Open)
-    down_days = first_half_df[first_half_df['close'] < first_half_df['open']]
+    # SMA_20_Vol on the most recent day
+    vol_ma20 = df.iloc[-1]['SMA_20_Vol']
     
-    if down_days.empty:
-        print("No down days found in the first half of the data.")
-        return None
+    # Calculate Dry-Up Percentage
+    vol_dry_up_pct = 0
+    if vol_ma20 > 0:
+        vol_dry_up_pct = (1 - (vol_current / vol_ma20)) * 100
         
-    # Find the day with the maximum volume among the down days
-    sc_day = down_days.loc[down_days['volume'].idxmax()]
+    # Condition: vol_current <= vol_ma20 * 0.7  => (dry up >= 30%)
+    vol_valid = vol_current <= (vol_ma20 * 0.70)
     
-    # Extract values
-    v_sc = sc_day['volume']
-    atr_sc = sc_day['ATRr_14']
-    sc_date = sc_day['timestamp']
-    sc_close = sc_day['close']
+    print(f" - Vol Current (3d avg): {vol_current:.2f}")
+    print(f" - Vol MA20: {vol_ma20:.2f}")
+    print(f"   => Volume Dry-Up: {vol_dry_up_pct:.2f}% (Valid: {vol_valid})")
+
+    # --- 2. ATR Contraction ---
+    # Average ATR of the last 3 days
+    atr_current = last_3_days['ATRr_14'].mean()
     
-    print(f"Selling Climax (SC) identified on: {sc_date.strftime('%Y-%m-%d')}")
-    print(f" - SC Close Price: {sc_close}")
-    print(f" - SC Volume (V_sc): {v_sc}")
-    print(f" - SC ATR (ATR_sc): {atr_sc}")
+    # Peak ATR over the last 60 days
+    last_60_days = df.tail(60)
+    atr_peak = last_60_days['ATRr_14'].max()
     
-    # Calculate 5-day averages for the most recent data (last 5 rows of the entire df)
-    last_5_days = df.tail(5)
-    v_test = last_5_days['volume'].mean()
-    atr_test = last_5_days['ATRr_14'].mean()
+    # Calculate ATR Shrinkage Percentage
+    atr_shrinkage_pct = 0
+    if atr_peak > 0:
+        atr_shrinkage_pct = (1 - (atr_current / atr_peak)) * 100
+        
+    # Condition: atr_current <= atr_peak * 0.50 => (shrinkage >= 50%)
+    atr_valid = atr_current <= (atr_peak * 0.50)
     
-    print(f"\nRecent 5-Day Averages (Test):")
-    print(f" - Volume Test (V_test): {v_test}")
-    print(f" - ATR Test (ATR_test): {atr_test}")
+    print(f" - ATR Current (3d avg): {atr_current:.4f}")
+    print(f" - Peak ATR (60d): {atr_peak:.4f}")
+    print(f"   => ATR Shrinkage: {atr_shrinkage_pct:.2f}% (Valid: {atr_valid})")
+
+    # --- 3. Tight Range Action ---
+    # Max High, Min Low, and Avg Close over the last 21 days
+    last_21_days = df.tail(21)
+    max_high = last_21_days['high'].max()
+    min_low = last_21_days['low'].min()
+    avg_price = last_21_days['close'].mean()
     
-    # Mathematical Kill Switch logic: Calculate drops
-    # Formula: Drop = (SC - Test) / SC * 100
-    volume_drop = ((v_sc - v_test) / v_sc) * 100
-    atr_drop = ((atr_sc - atr_test) / atr_sc) * 100
+    price_range = max_high - min_low
     
-    print(f"\nAnalyzing Compression (Kill Switches):")
-    print(f" - Volume Drop: {volume_drop:.2f}%")
-    print(f" - ATR Drop: {atr_drop:.2f}%")
+    # Calculate Price Range Percentage relative to avg price
+    price_range_pct = 0
+    if avg_price > 0:
+        price_range_pct = (price_range / avg_price) * 100
+        
+    # Condition: price_range < avg_price * 0.10 => (range < 10%)
+    range_valid = price_range_pct < 10.0
     
-    # Both drops must be between 40% and 60%
-    volume_valid = 40 <= volume_drop <= 60
-    atr_valid = 40 <= atr_drop <= 60
+    print(f" - 21d Max High: {max_high:.4f}, Min Low: {min_low:.4f}")
+    print(f" - 21d Avg Price: {avg_price:.4f}")
+    print(f"   => Price Range: {price_range_pct:.2f}% (Valid: {range_valid})")
     
-    is_valid_wyckoff = volume_valid and atr_valid
+    # --- Final Validation ---
+    is_valid_vcp = vol_valid and atr_valid and range_valid
     
-    if is_valid_wyckoff:
-        print(" => SUCCESS: Both Volume and ATR compression are within 40%-60% target.")
+    if is_valid_vcp:
+        print(" => SUCCESS: All 3 VCP conditions met!")
     else:
-        print(" => FAILED: Compression targets not met.")
+        print(" => FAILED: VCP conditions not met.")
     
     return {
-        'is_valid': is_valid_wyckoff,
-        'sc_date': sc_date,
-        'sc_close': sc_close,
-        'v_sc': v_sc,
-        'atr_sc': atr_sc,
-        'v_test': v_test,
-        'atr_test': atr_test,
-        'volume_drop_pct': volume_drop,
-        'atr_drop_pct': atr_drop,
-        'sc_row_data': sc_day
+        'is_valid': is_valid_vcp,
+        'vol_dry_up_pct': vol_dry_up_pct,
+        'atr_shrinkage_pct': atr_shrinkage_pct,
+        'price_range_pct': price_range_pct,
+        'sc_date': df.iloc[-1]['timestamp'] # Provide latest date for UI compatibility
     }
 
 def main_node1(watchlist_symbols):
@@ -155,14 +169,14 @@ def main_node1(watchlist_symbols):
             print(f"  [SKIP] Could not analyze {symbol}")
             continue
         
-        # Step 3: Only collect coins that passed both Kill Switch filters
+        # Step 3: Only collect coins that passed all VCP filters
         if result['is_valid']:
             passed_coins.append({
                 'Symbol': symbol,
-                'SC Date': result['sc_date'].strftime('%Y-%m-%d'),
-                'SC Close': result['sc_close'],
-                'Volume Drop (%)': round(result['volume_drop_pct'], 2),
-                'ATR Drop (%)': round(result['atr_drop_pct'], 2),
+                'Date': result['sc_date'].strftime('%Y-%m-%d'),
+                'Volume Dry-Up (%)': round(result['vol_dry_up_pct'], 2),
+                'ATR Shrinkage (%)': round(result['atr_shrinkage_pct'], 2),
+                'Price Range (%)': round(result['price_range_pct'], 2),
             })
         
         # Respect API rate limits
