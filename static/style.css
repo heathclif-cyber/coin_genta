@@ -148,6 +148,7 @@ h1 {
     letter-spacing: -0.5px;
     background: linear-gradient(to right, #ffffff, #a5b4fc);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -470,6 +471,12 @@ thead th {
     z-index: 10;
     background-color: var(--bg-dark);
     border-bottom: 2px solid var(--accent-solid);
+}
+
+th[title] {
+    cursor: help;
+    text-decoration: underline dotted #888;
+    text-underline-offset: 4px;
 }
 
 tbody tr {
