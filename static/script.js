@@ -17,13 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const step1 = document.getElementById('step-1-indicator');
     const step2 = document.getElementById('step-2-indicator');
+    const step3 = document.getElementById('step-3-indicator');
 
     // PDF elements
     const pdfBtn = document.getElementById('pdf-btn');
+    const pdfFinalBtn = document.getElementById('pdf-final-btn');
 
     // Store screener data for passing to Wyckoff
     let screenerData = [];
     let wyckoffPassedData = []; // Store passed data for PDF
+    let onchainPassedData = []; // Store passed data for Final PDF
 
     // ============================
     // Step 1: Market Screener
@@ -191,6 +194,99 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // ============================
+    // Step 3: On-Chain Analysis
+    // ============================
+    const onchainBtn = document.getElementById('onchain-btn');
+    const onchainLoader = document.getElementById('onchain-loader');
+    const onchainResults = document.getElementById('onchain-results');
+    const onchainError = document.getElementById('onchain-error');
+    const onchainErrorText = document.getElementById('onchain-error-text');
+    const onchainTableBody = document.getElementById('onchain-table-body');
+    const onchainStats = document.getElementById('onchain-stats');
+
+    if (onchainBtn) {
+        onchainBtn.addEventListener('click', async () => {
+            if (wyckoffPassedData.length === 0) return;
+
+            onchainBtn.disabled = true;
+            onchainBtn.innerHTML = '<span class="btn-text">Analyzing...</span>';
+            onchainLoader.classList.remove('hidden');
+            onchainResults.classList.add('hidden');
+            onchainError.classList.add('hidden');
+            onchainTableBody.innerHTML = '';
+            if (pdfFinalBtn) pdfFinalBtn.classList.add('hidden');
+            onchainPassedData = [];
+
+            // Activate Step 3 indicator
+            if (step3) {
+                step3.classList.add('active');
+                step3.classList.remove('completed');
+            }
+
+            try {
+                const response = await fetch('/api/onchain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ coins: wyckoffPassedData })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    onchainStats.innerText = `${data.length} coins passed validation`;
+
+                    if (data.length === 0) {
+                        onchainStats.innerText = 'No coins passed On-Chain validation';
+                    } else {
+                        onchainPassedData = data;
+                        if (pdfFinalBtn) pdfFinalBtn.classList.remove('hidden');
+                    }
+
+                    data.forEach(coin => {
+                        const row = document.createElement('tr');
+                        const cleanSymbol = coin.Symbol.includes('/') ? coin.Symbol.split('/')[0] : coin.Symbol;
+
+                        row.innerHTML = `
+                            <td class="symbol-cell">
+                                <img src="https://assets.coincap.io/assets/icons/${cleanSymbol.toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${cleanSymbol}&background=random&color=fff&rounded=true'" alt="${cleanSymbol}" width="28" height="28" style="borderRadius:50%">
+                                ${cleanSymbol}
+                            </td>
+                            <td class="number-cell">${coin['Netflow Status']}</td>
+                            <td class="number-cell">${coin['Wallet Age Ratio']}</td>
+                            <td class="number-cell">${coin['SSR Status']}</td>
+                            <td><span class="status-badge status-passed">💎 Passed</span></td>
+                        `;
+                        onchainTableBody.appendChild(row);
+                    });
+
+                    // Mark Step 3 as completed
+                    if (step3) {
+                        step3.classList.remove('active');
+                        step3.classList.add('completed');
+                    }
+
+                    onchainResults.classList.remove('hidden');
+                } else {
+                    throw new Error(result.message || "On-Chain analysis failed.");
+                }
+            } catch (error) {
+                console.error(error);
+                onchainErrorText.innerText = "Error: " + error.message;
+                onchainError.classList.remove('hidden');
+            } finally {
+                onchainBtn.disabled = false;
+                onchainBtn.innerHTML = '<span class="btn-text">Run On-Chain Verification</span><span class="btn-icon">🔗</span>';
+                onchainLoader.classList.add('hidden');
+
+                if (!onchainResults.classList.contains('hidden')) {
+                    onchainResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+
 
     // ============================
     // PDF Generation Logic

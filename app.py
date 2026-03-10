@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from screener import run_scanner
 from node1_wyckoff import main_node1
+from node2_onchain import main_node2
 import pandas as pd
 
 app = Flask(__name__)
@@ -39,6 +40,38 @@ def wyckoff_endpoint():
             }), 400
         
         result_df = main_node1(symbols)
+        
+        if result_df is not None and not result_df.empty:
+            result_df = result_df.where(pd.notnull(result_df), None)
+            return jsonify({
+                'status': 'success',
+                'data': result_df.to_dict(orient='records')
+            })
+        else:
+            return jsonify({
+                'status': 'success',
+                'data': []
+            })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/onchain', methods=['POST'])
+def onchain_endpoint():
+    """API endpoint to run Node 2 On-Chain analysis on VCP validated coins."""
+    try:
+        body = request.get_json()
+        passed_vcp_coins = body.get('coins', [])
+        
+        if not passed_vcp_coins:
+            return jsonify({
+                'status': 'error',
+                'message': 'No VCP validated coins provided.'
+            }), 400
+            
+        result_df = main_node2(passed_vcp_coins)
         
         if result_df is not None and not result_df.empty:
             result_df = result_df.where(pd.notnull(result_df), None)

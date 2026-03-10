@@ -42,6 +42,14 @@
                     <span class="step-desc">Volatility Contraction</span>
                 </div>
             </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-3-indicator">
+                <div class="step-number">3</div>
+                <div class="step-info">
+                    <span class="step-title">Node 2: On-Chain</span>
+                    <span class="step-desc">Glassnode/CryptoQuant</span>
+                </div>
+            </div>
         </div>
 
         <!-- Step 1: Screener -->
@@ -148,6 +156,62 @@
                         </tr>
                     </thead>
                     <tbody id="wyckoff-table-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Step 3: On-Chain Analysis Button (appears after VCP) -->
+            <section class="controls onchain-controls" style="margin-top: 2rem;">
+                <button id="onchain-btn" class="glow-on-hover onchain-btn"
+                    style="background: linear-gradient(45deg, #10b981, #3b82f6);">
+                    <span class="btn-text">Run On-Chain Verification</span>
+                    <span class="btn-icon">🔗</span>
+                </button>
+            </section>
+        </div>
+
+        <!-- Step 3 Loader -->
+        <div id="onchain-loader" class="loader-container hidden">
+            <div class="spinner" style="border-top-color: #3b82f6;"></div>
+            <p>Analyzing On-Chain Metrics...</p>
+            <p class="small-text">Filtering via Glassnode/CryptoQuant mock for Netflow, Wallet Age, and SSR Index.</p>
+        </div>
+
+        <!-- Step 3 Error -->
+        <div id="onchain-error" class="error-container hidden">
+            <p id="onchain-error-text">An error occurred during On-Chain analysis.</p>
+        </div>
+
+        <!-- Step 3 Results Table -->
+        <div id="onchain-results" class="results-container hidden">
+            <div class="table-header">
+                <h2>Node 2: On-Chain Verified <span class="badge"
+                        style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">💎
+                        Final</span></h2>
+                <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
+                    <div class="stats" id="onchain-stats">Found 0 coins</div>
+                    <button id="pdf-final-btn" class="glow-on-hover hidden"
+                        style="width: auto; height: 36px; padding: 0 15px; font-size: 0.9rem; background: #6366f1; border-radius: 8px;">
+                        <span class="btn-text">Download Final PDF</span>
+                    </button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="onchain-table">
+                    <thead>
+                        <tr>
+                            <th title="Simboy koin kripto">Symbol</th>
+                            <th title="Netflow Token harian. Valid = Negatif (Outflow > Inflow) 3 hari berturut-turut">
+                                Netflow Status</th>
+                            <th title="Rasio dompet matang vs baru. Valid = > 70% dari dompet berusia > 48 jam">Wallet
+                                Age Ratio</th>
+                            <th
+                                title="Stablecoin Supply Ratio. Valid = Skor berada di kuartil Low (Mata Uang Stabil melimpah)">
+                                SSR Status</th>
+                            <th title="Konfirmasi final kelolosan rantai On-Chain.">Overall On-Chain Validation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onchain-table-body">
                     </tbody>
                 </table>
             </div>
