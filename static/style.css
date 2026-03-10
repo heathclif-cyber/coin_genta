@@ -435,7 +435,7 @@ h1 {
 .table-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 500px;
+    max-height: 600px;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--glass-border);
@@ -451,6 +451,8 @@ th,
 td {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    vertical-align: middle;
 }
 
 th {
@@ -459,10 +461,14 @@ th {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: rgba(20, 20, 30, 0.95);
+}
+
+thead th {
     position: sticky;
     top: 0;
     z-index: 10;
+    background-color: var(--bg-dark);
+    border-bottom: 2px solid var(--glass-border);
 }
 
 tbody tr {
@@ -475,15 +481,17 @@ tbody tr:hover {
 
 /* Data styling */
 .symbol-cell {
-    font-weight: 700;
-    color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 700;
+    color: #fff;
 }
 
 .number-cell {
     font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 
 .r-value {

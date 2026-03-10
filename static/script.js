@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     row.innerHTML = `
                         <td class="symbol-cell">
-                            <img src="https://ui-avatars.com/api/?name=${coin.Symbol}&background=random&color=fff&rounded=true&size=32" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
+                            <img src="https://assets.coincap.io/assets/icons/${coin.Symbol.replace('/USDT', '').toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.Symbol}&background=random&color=fff&rounded=true'" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
                             ${coin.Symbol}
                         </td>
                         <td style="color: var(--text-muted)">${coin.Ticker}</td>
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     row.innerHTML = `
                         <td class="symbol-cell">
-                            <img src="https://ui-avatars.com/api/?name=${coin.Symbol.replace('/USDT', '')}&background=10b981&color=fff&rounded=true&size=32" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
+                            <img src="https://assets.coincap.io/assets/icons/${coin.Symbol.replace('/USDT', '').toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.Symbol}&background=random&color=fff&rounded=true'" alt="${coin.Symbol}" width="28" height="28" style="border-radius:50%">
                             ${coin.Symbol}
                         </td>
                         <td class="number-cell" style="font-size: 0.85rem;">${timeframe}</td>
