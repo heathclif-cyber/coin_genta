@@ -199,7 +199,7 @@ def main_node1(watchlist_symbols):
             })
         
         # Respect API rate limits
-        time.sleep(0.5)
+        time.sleep(0.1)
     
     # Build final DataFrame of passed coins only
     print("\n" + "=" * 60)

@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td class="number-cell">${coin['Netflow Status']}</td>
                             <td class="number-cell">${coin['Wallet Age Ratio']}</td>
                             <td class="number-cell">${coin['SSR Status']}</td>
-                            <td><span class="status-badge status-passed">💎 Passed</span></td>
+                            <td><span class="status-badge status-passed">💎 Passed</span><br><span style="font-size: 0.75rem; color: #888;">${coin['Data Source'] || 'Simulated'}</span></td>
                         `;
                         onchainTableBody.appendChild(row);
                     });
