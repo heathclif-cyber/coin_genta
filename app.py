@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request
 from screener import run_scanner
 from node1_wyckoff import main_node1
 from node2_onchain import main_node2
+from node3_sentiment import main_node3
 import pandas as pd
 
 app = Flask(__name__)
@@ -72,6 +73,38 @@ def onchain_endpoint():
             }), 400
             
         result_df = main_node2(passed_vcp_coins)
+        
+        if result_df is not None and not result_df.empty:
+            result_df = result_df.where(pd.notnull(result_df), None)
+            return jsonify({
+                'status': 'success',
+                'data': result_df.to_dict(orient='records')
+            })
+        else:
+            return jsonify({
+                'status': 'success',
+                'data': []
+            })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/sentiment', methods=['POST'])
+def sentiment_endpoint():
+    """API endpoint to run Node 3 Sentiment analysis on On-Chain validated coins."""
+    try:
+        body = request.get_json()
+        passed_onchain_coins = body.get('coins', [])
+        
+        if not passed_onchain_coins:
+            return jsonify({
+                'status': 'error',
+                'message': 'No On-Chain validated coins provided.'
+            }), 400
+            
+        result_df = main_node3(passed_onchain_coins)
         
         if result_df is not None and not result_df.empty:
             result_df = result_df.where(pd.notnull(result_df), None)

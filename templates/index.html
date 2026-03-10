@@ -50,6 +50,14 @@
                     <span class="step-desc">Glassnode/CryptoQuant</span>
                 </div>
             </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-4-indicator">
+                <div class="step-number">4</div>
+                <div class="step-info">
+                    <span class="step-title">Node 3: Sentiment</span>
+                    <span class="step-desc">Fear & Greed Index</span>
+                </div>
+            </div>
         </div>
 
         <!-- Step 1: Screener -->
@@ -211,7 +219,59 @@
                             <th title="Konfirmasi final kelolosan rantai On-Chain.">Overall On-Chain Validation</th>
                         </tr>
                     </thead>
-                    <tbody id="onchain-table-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Step 4: Sentiment Analysis Button (appears after On-Chain) -->
+            <section class="controls sentiment-controls" style="margin-top: 2rem;">
+                <button id="sentiment-btn" class="glow-on-hover sentiment-btn"
+                    style="background: linear-gradient(45deg, #f59e0b, #ef4444);">
+                    <span class="btn-text">Run Sentiment & Divergence Audit</span>
+                    <span class="btn-icon">👁️</span>
+                </button>
+            </section>
+        </div>
+
+        <!-- Step 4 Loader -->
+        <div id="sentiment-loader" class="loader-container hidden">
+            <div class="spinner" style="border-top-color: #ef4444;"></div>
+            <p>Auditing Global Market Sentiment...</p>
+            <p class="small-text">Filtering via Alternative.me Fear & Greed Index (Must be &lt;= 24).</p>
+        </div>
+
+        <!-- Step 4 Error -->
+        <div id="sentiment-error" class="error-container hidden">
+            <p id="sentiment-error-text">An error occurred during Sentiment analysis.</p>
+        </div>
+
+        <!-- Step 4 Results Table -->
+        <div id="sentiment-results" class="results-container hidden">
+            <div class="table-header">
+                <h2>Node 3: Sentiment & Divergence Audit <span class="badge"
+                        style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">🏆
+                        Ultimate Final</span></h2>
+                <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
+                    <div class="stats" id="sentiment-stats">Found 0 coins</div>
+                    <button id="pdf-sentiment-btn" class="glow-on-hover hidden"
+                        style="width: auto; height: 36px; padding: 0 15px; font-size: 0.9rem; background: #6366f1; border-radius: 8px;">
+                        <span class="btn-text">Download Final Institutional PDF</span>
+                    </button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="sentiment-table">
+                    <thead>
+                        <tr>
+                            <th title="Simboy koin kripto">Symbol</th>
+                            <th title="Konfirmasi final kelolosan rantai On-Chain Node 2.">Node 2 Validation</th>
+                            <th title="Mengukur emosi agregat. Ideal 0-24 (Extreme Fear) untuk entri institusional.">
+                                Sentiment Score</th>
+                            <th title="Status validasi sentimen makro.">Sentiment Status</th>
+                            <th title="Keputusan akhir pipeline.">Node 3 Validation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sentiment-table-body">
                     </tbody>
                 </table>
             </div>
