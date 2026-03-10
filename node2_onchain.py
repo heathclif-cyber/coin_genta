@@ -14,6 +14,10 @@ CQ_HEADERS = {
     'Authorization': f'Bearer {CRYPTOQUANT_API_KEY}'
 }
 
+# Initialize a global session to reuse TCP connections
+session = requests.Session()
+session.headers.update(CQ_HEADERS)
+
 def mock_onchain_api_call(symbol, metric):
     """
     Simulated data generator (Fallback mechanism).
@@ -43,7 +47,7 @@ def get_cryptoquant_ssr():
     }
     
     try:
-        response = requests.get(url, headers=CQ_HEADERS, params=params, timeout=3)
+        response = session.get(url, params=params, timeout=2)
         response.raise_for_status()
         data = response.json()
         
@@ -85,7 +89,7 @@ def check_netflow(symbol):
     }
     
     try:
-        response = requests.get(url, headers=CQ_HEADERS, params=params, timeout=3)
+        response = session.get(url, params=params, timeout=2)
         
         # Some altcoins might not be supported by CQ Free Tier, check status gracefully
         if response.status_code == 200:
@@ -221,8 +225,8 @@ def main_node2(passed_vcp_coins):
         print("    => Failed. Using simulated SSR per coin.")
         
     # Use ThreadPoolExecutor for concurrent processing
-    # Adjust max_workers as needed (10 is a good starting point for I/O bound tasks)
-    max_workers = min(10, len(passed_vcp_coins)) if passed_vcp_coins else 1
+    # Aggressively spawn up to 20 workers to minimize waiting time
+    max_workers = min(20, len(passed_vcp_coins)) if passed_vcp_coins else 1
     
     print(f"[*] Processing {len(passed_vcp_coins)} coins concurrently with {max_workers} threads...")
     
@@ -242,9 +246,6 @@ def main_node2(passed_vcp_coins):
                     onchain_passed_coins.append(result)
             except Exception as exc:
                 print(f"    [!] Error processing {coin['Symbol']}: {exc}")
-            
-            # Very short sleep to gently space out potentially concurrent API requests
-            time.sleep(0.1)
             
     print("\n" + "=" * 60)
     print("  FINAL NODE 2 RESULT (CLEARED ALL VCP + ON-CHAIN)")

@@ -4,6 +4,7 @@ from node1_wyckoff import main_node1
 from node2_onchain import main_node2
 from node3_sentiment import main_node3
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 app = Flask(__name__)
 
@@ -72,7 +73,15 @@ def onchain_endpoint():
                 'message': 'No VCP validated coins provided.'
             }), 400
             
-        result_df = main_node2(passed_vcp_coins)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(main_node2, passed_vcp_coins)
+            try:
+                result_df = future.result(timeout=60)
+            except TimeoutError:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Node 2 analysis timed out after 60 seconds. Please try again later.'
+                }), 504
         
         if result_df is not None and not result_df.empty:
             result_df = result_df.where(pd.notnull(result_df), None)

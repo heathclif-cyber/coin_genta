@@ -225,6 +225,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 step3.classList.remove('completed');
             }
 
+            // Progressive Loading Setup
+            const onchainProgressMsg = document.getElementById('onchain-progress-msg');
+            const onchainTimer = document.getElementById('onchain-timer');
+            let secondsElapsed = 0;
+
+            if (onchainProgressMsg) onchainProgressMsg.innerText = 'Initializing analysis...';
+            if (onchainTimer) onchainTimer.innerText = 'Time elapsed: 0s';
+
+            let timerInterval = setInterval(() => {
+                secondsElapsed++;
+                if (onchainTimer) onchainTimer.innerText = `Time elapsed: ${secondsElapsed}s`;
+
+                if (onchainProgressMsg) {
+                    const messages = [
+                        'Fetching Global SSR...',
+                        'Validating Exchange Flows...',
+                        'Auditing Wallet Maturity...',
+                        'Nearly there, compiling results...'
+                    ];
+                    const msgIndex = Math.floor(secondsElapsed / 5) % messages.length;
+                    onchainProgressMsg.innerText = messages[msgIndex];
+                }
+            }, 1000);
+
             try {
                 const response = await fetch('/api/onchain', {
                     method: 'POST',
@@ -275,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 onchainErrorText.innerText = "Error: " + error.message;
                 onchainError.classList.remove('hidden');
             } finally {
+                clearInterval(timerInterval);
                 onchainBtn.disabled = false;
                 onchainBtn.innerHTML = '<span class="btn-text">Run On-Chain Verification</span><span class="btn-icon">🔗</span>';
                 onchainLoader.classList.add('hidden');
